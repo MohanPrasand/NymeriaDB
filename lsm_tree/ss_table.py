@@ -18,4 +18,13 @@ def dfs(nd, f):
 def save(n, fp):
     with open(fp, 'w') as f:
         dfs(n, f)
-    return True    
+    return True
+
+def load(fp):
+    ret = []
+    with open(fp, 'r') as f:
+        for line in f:
+            i, j = line.rsplit("\n").split(";")
+            ret.append((i, j))
+    return ret
+            
