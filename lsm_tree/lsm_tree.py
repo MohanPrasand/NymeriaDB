@@ -1,7 +1,7 @@
 import os
 from . import avl_tree
 from . import ss_table
-
+from bloom_filter import BloomFilter
 
 TOMBSTONE = "*del"
 
@@ -20,6 +20,7 @@ class LSM_Tree:
 
         self.start = None
         self.end = None
+        self.bloom_filter = BloomFilter(size=1024)
 
     def insert(self, key, val):
 
@@ -27,8 +28,10 @@ class LSM_Tree:
 
         self.start = min(self.start, key) if self.start is not None else key
         self.end = max(self.end, key) if self.end is not None else key
+        self.bloom_filter.add(key)
 
         self.memTablec += 1
+
 
         if self.memTablec >= self.MAX_MEMTABLE:
 
@@ -38,6 +41,7 @@ class LSM_Tree:
             self.memTablec = 0
             self.start = None
             self.end = None
+            self.bloom_filter = BloomFilter(size=1024)
 
         return True
 
@@ -47,6 +51,7 @@ class LSM_Tree:
 
         self.start = min(self.start, key) if self.start is not None else key
         self.end = max(self.end, key) if self.end is not None else key
+        self.bloom_filter.add(key)
 
         self.memTablec += 1
 
@@ -58,6 +63,7 @@ class LSM_Tree:
             self.memTablec = 0
             self.start = None
             self.end = None
+            self.bloom_filter = BloomFilter(size=1024)
 
         return True
 
@@ -71,7 +77,8 @@ class LSM_Tree:
         self.ssTables[level].append({
             "start": self.start,
             "end": self.end,
-            "file": filepath
+            "file": filepath,
+            "bloom_filter": self.bloom_filter
         })
 
         if len(self.ssTables[level]) >= 4 * (level + 1):
@@ -86,37 +93,49 @@ class LSM_Tree:
 
         start = None
         end = None
-
+        bloom_filter = BloomFilter(size=1024) 
         old_tables = self.ssTables[level]
 
         for tb in old_tables:
 
             start = min(start, tb["start"]) if start is not None else tb["start"]
             end = max(end, tb["end"]) if end is not None else tb["end"]
-
+            bloom_filter = bloom_filter.merge(tb["bloom_filter"])
             tree = ss_table.load(tb["file"])
 
             for key, value in tree:
                 merged = avl_tree.insert(merged, key, value)
 
-        # delete old SSTables
         for tb in old_tables:
             if os.path.exists(tb["file"]):
                 os.remove(tb["file"])
 
         self.ssTables[level] = []
 
-        # reuse flushMem()
         self.start = start
         self.end = end
+        self.bloom_filter = bloom_filter
 
         self.flushMem(merged, level + 1)
 
         self.start = None
         self.end = None
+        self.bloom_filter = BloomFilter(size=1024)
 
     def search(self, key):
-
+        if not self.bloom_filter.contains(key):
+            for level in self.ssTables:
+                for tb in reversed(level):
+                    if not tb["bloom_filter"].contains(key):
+                        continue
+                    if tb["start"] <= key <= tb["end"]:
+                        value = ss_table.search(tb["file"], key)
+                        if value is None:
+                            continue
+                        if value == TOMBSTONE:
+                            return None
+                        return value
+            return None
         t = self.memTable
 
         while t:
@@ -135,19 +154,13 @@ class LSM_Tree:
                 t = t.right
 
         for level in self.ssTables:
-
             for tb in reversed(level):
-
                 if tb["start"] <= key <= tb["end"]:
-
                     value = ss_table.search(tb["file"], key)
-
                     if value is None:
                         continue
-
                     if value == TOMBSTONE:
                         return None
-
                     return value
 
         return None
