@@ -164,3 +164,20 @@ class LSM_Tree:
                     return value
 
         return None
+    
+    def clear(self):
+        self.memTable = None
+        self.memTablec = 0
+
+        for level in self.ssTables:
+            for tb in level:
+                if os.path.exists(tb["file"]):
+                    os.remove(tb["file"])
+
+        self.ssTables = [[], [], []]
+        self.count = 0
+        self.start = None
+        self.end = None
+        self.bloom_filter = BloomFilter(size=1024)
+
+        return True
