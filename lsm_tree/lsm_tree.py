@@ -1,7 +1,7 @@
 import os
 from . import avl_tree
 from . import ss_table
-from bloom_filter import BloomFilter
+from lsm_tree.bloom_filter import BloomFilter
 
 TOMBSTONE = "*del"
 
