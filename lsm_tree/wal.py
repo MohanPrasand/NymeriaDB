@@ -12,11 +12,9 @@ class WAL:
 
     def replay(self):
         self.file.seek(0)
-        logs = []
         for line in self.file:
             vals = line.strip().split(",")
-            logs.append(tuple(vals))
-        return logs
+            yield tuple(vals)
 
     def rotate(self):
         self.file.close()
