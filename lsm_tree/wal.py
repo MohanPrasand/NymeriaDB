@@ -21,3 +21,9 @@ class WAL:
         os.rename(self.path, self.path + ".old")
         self.file = open(self.path, "a+")
         self.file.seek(0, 2)
+
+    def clear(self):
+        self.file.close()
+        os.remove(self.path)
+        self.file = open(self.path, "a+")
+        self.file.seek(0, 2)
