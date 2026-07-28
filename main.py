@@ -1,18 +1,22 @@
 import os
 from lsm_tree import lsm_tree
 from lsm_tree.wal import WAL
+from manifest_handler import Manifest
 
 WAL_FILE = "./data/wal.log"
+MANIFEST_FILE = "./data/manifest.json"
 
 lsm = lsm_tree.LSM_Tree()
 wal = WAL(WAL_FILE)
+manifest = Manifest(MANIFEST_FILE)
 
-for op, *val in wal.replay():
-    if op == "insert":
-        lsm.insert(*val)
-    elif op == "delete":
-        lsm.delete(val[0])
+lsm.ssTables = manifest.read()
 
+for op in wal.replay():
+    if op[0] == "insert":
+        lsm.insert(op[1], op[2])
+    elif op[0] == "delete":
+        lsm.delete(op[1])
 
 
 while True:
@@ -21,13 +25,19 @@ while True:
     if ch == 1:
         key, val = input("key: "), input("val: ")
         wal.log("insert", key, val)
-        lsm.insert(key, val)
+        is_compacted= lsm.insert(key, val)
+        if is_compacted:
+            manifest.write(lsm.ssTables)
+            wal.clear()
         print(f"inserted {key}, {val}")
 
     elif ch == 2:
         key = input("key: ")
         wal.log("delete", key)
-        lsm.delete(key)
+        is_compacted = lsm.delete(key)
+        if is_compacted:
+            manifest.write(lsm.ssTables)
+            wal.clear()
         print(f"deleted {key}")
     
     elif ch == 3:
