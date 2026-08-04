@@ -1,50 +1,53 @@
-import os
-from lsm_tree import lsm_tree
-from lsm_tree.wal import WAL
-from manifest_handler import Manifest
+import socket
+from database import Database
 
-WAL_FILE = "./data/wal.log"
-MANIFEST_FILE = "./data/manifest.json"
+DB = Database()
+PORT = 5678
 
-lsm = lsm_tree.LSM_Tree()
-wal = WAL(WAL_FILE)
-manifest = Manifest(MANIFEST_FILE)
+server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+server.bind(('localhost', PORT))
+server.listen(5)
 
-lsm.ssTables = manifest.read()
-
-for op in wal.replay():
-    if op[0] == "insert":
-        lsm.insert(op[1], op[2])
-    elif op[0] == "delete":
-        lsm.delete(op[1])
-
+def execute_command(command):
+    command[0] = command[0].lower()
+    if command[0] == "insert":
+        if len(command) != 3:
+            return "Error: insert command requires key and value"
+        key, val = command[1], command[2]
+        DB.insert(key, val)
+        return f"Inserted key: {key}, value: {val}"
+    elif command[0] == "delete":
+        if len(command) != 2:
+            return "Error: delete command requires key"
+        key = command[1]
+        DB.delete(key)
+        return f"Deleted key: {key}"
+    elif command[0] == "get":
+        if len(command) != 2:
+            return "Error: get command requires key"
+        key = command[1]
+        val = DB.get(key)
+        return f"Value for key {key}: {val}"
+    elif command[0] == "shutdown":
+        return "Shutting down DB..."
+    else:
+        return "Error: Unknown command"
 
 while True:
-    print("Choose:\n1. insert key, val\n2. delete key\n3. get key\nEnter choice: ", end="")
-    ch = int(input())
-    if ch == 1:
-        key, val = input("key: "), input("val: ")
-        wal.log("insert", key, val)
-        is_compacted= lsm.insert(key, val)
-        if is_compacted:
-            manifest.write(lsm.ssTables)
-            wal.clear()
-        print(f"inserted {key}, {val}")
-
-    elif ch == 2:
-        key = input("key: ")
-        wal.log("delete", key)
-        is_compacted = lsm.delete(key)
-        if is_compacted:
-            manifest.write(lsm.ssTables)
-            wal.clear()
-        print(f"deleted {key}")
-    
-    elif ch == 3:
-        key = input("key: ")
-        print(lsm.search(key))
-
-    else:
+    conn, addr = server.accept()
+    print(f"Connection from {addr} has been established!")
+    SHUTDOWN = False
+    while True:
+        data = conn.recv(1024).decode()
+        if not data:
+            break
+        command = data.split()
+        execution_result = execute_command(command)+"\n"
+        conn.sendall(execution_result.encode())
+        if command[0].lower() == "shutdown":
+            SHUTDOWN = True
+            break
+    conn.close()
+    if SHUTDOWN:
         break
-
-print("shutting down db...")

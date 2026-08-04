@@ -22,11 +22,12 @@ class Manifest:
     def read(self):
         data = None
         with open(self.filepath, 'r') as f:
-            data = json.load(f)
+            data = f.read()
 
-        if not data["tables"]:
+        if not data:
             return [[], [], []]
 
+        data = json.loads(data)
         ss_tables = []
         for i in range(max([t["level"] for t in data["tables"]]) + 1):
             ss_tables.append([])
