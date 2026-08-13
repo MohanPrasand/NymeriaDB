@@ -1,10 +1,17 @@
 import socket
+import sys
 
+
+def get_named_arg(arg_name):
+    for arg in sys.argv:
+        if arg.startswith(f"--{arg_name}="):
+            return arg.split("=")[1]
+    return None
 
 SERVER_PORT = 5678
-
+HOST = get_named_arg("host") or "localhost"
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-server.connect(('localhost', SERVER_PORT))
+server.connect((HOST, SERVER_PORT))
 
 while True:
     command = input("NymeriaDB> ")
