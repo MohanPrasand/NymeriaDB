@@ -28,6 +28,8 @@ class Manifest:
             return [[], [], []]
 
         data = json.loads(data)
+        if "tables" not in data or not data["tables"]:
+            return [[], [], []]
         ss_tables = []
         for i in range(max([t["level"] for t in data["tables"]]) + 1):
             ss_tables.append([])

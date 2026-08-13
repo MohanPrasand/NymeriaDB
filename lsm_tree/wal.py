@@ -3,6 +3,8 @@ import os
 class WAL:
     def __init__(self, path):
         self.path = path
+        if not os.path.exists(path):
+            os.makedirs(os.path.dirname(path), exist_ok=True)
         self.file = open(path, "a+")
         self.file.seek(0, 2)
 

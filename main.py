@@ -1,7 +1,8 @@
 import socket
 from database import Database
 
-DB = Database()
+
+DB = None
 PORT = 5678
 
 server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -11,6 +12,17 @@ server.listen(5)
 
 def execute_command(command):
     command[0] = command[0].lower()
+    if command[0] == "select":
+        if len(command) != 2:
+            return "Error: select command requires database name"
+        db_name = command[1]
+        global DB
+        DB = Database(db_name)
+        return f"Database selected: {db_name}"
+
+    if not DB:
+        return "Error: No database selected. Use 'select <db_name>' to select a database."
+    
     if command[0] == "insert":
         if len(command) != 3:
             return "Error: insert command requires key and value"
@@ -42,7 +54,7 @@ while True:
         data = conn.recv(1024).decode()
         if not data:
             break
-        command = data.split()
+        command = data.strip().split()
         execution_result = execute_command(command)+"\n"
         conn.sendall(execution_result.encode())
         if command[0].lower() == "shutdown":

@@ -2,16 +2,14 @@ from lsm_tree import lsm_tree
 from lsm_tree.wal import WAL
 from manifest_handler import Manifest
 
-
+DB_PATH = "./databases"
 
 class Database:
-    WAL_FILE = "./data/wal.log"
-    MANIFEST_FILE = "./data/manifest.json"
-
-    def __init__(self):
+    def __init__(self, db_name):
+        self.db_name = db_name
         self.lsm = lsm_tree.LSM_Tree()
-        self.wal = WAL(self.WAL_FILE)
-        self.manifest = Manifest(self.MANIFEST_FILE)
+        self.wal = WAL(f"{DB_PATH}/{db_name}/wal.log")
+        self.manifest = Manifest(f"{DB_PATH}/{db_name}/manifest.json")
 
         self.lsm.ssTables = self.manifest.read()
 
