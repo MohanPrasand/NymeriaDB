@@ -1,8 +1,5 @@
 from database import Database
 
-
-DB = None
-
 class SessionHandler:
     def __init__(self):
         self.DB = None
@@ -16,30 +13,29 @@ class SessionHandler:
             if len(command) != 2:
                 return "Error: select command requires database name"
             db_name = command[1]
-            global DB
-            DB = Database(db_name)
+            self.DB = Database(db_name)
             return f"Database selected: {db_name}"
 
-        if not DB:
+        if not self.DB:
             return "Error: No database selected. Use 'select <db_name>' to select a database."
         
         if command[0] == "insert":
             if len(command) != 3:
                 return "Error: insert command requires key and value"
             key, val = command[1], command[2]
-            DB.insert(key, val)
+            self.DB.insert(key, val)
             return f"Inserted key: {key}, value: {val}"
         elif command[0] == "delete":
             if len(command) != 2:
                 return "Error: delete command requires key"
             key = command[1]
-            DB.delete(key)
+            self.DB.delete(key)
             return f"Deleted key: {key}"
         elif command[0] == "get":
             if len(command) != 2:
                 return "Error: get command requires key"
             key = command[1]
-            val = DB.get(key)
+            val = self.DB.get(key)
             return f"Value for key {key}: {val}"
         elif command[0] == "shutdown":
             return "Shutting down DB..."
