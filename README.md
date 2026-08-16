@@ -14,7 +14,7 @@ It is built around a Log-Structured Merge (LSM) Tree architecture with immutable
 - [x] Bloom Filters
 - [x] Write-Ahead Log (WAL)
 - [x] Crash Recovery
-- [ ] Manifest
+- [x] Manifest
 - [ ] Sparse Index
 - [ ] Background Compaction
 - [ ] Distributed Design
@@ -24,7 +24,7 @@ It is built around a Log-Structured Merge (LSM) Tree architecture with immutable
 ### Storage Engine
 - [x] LSM Tree
 - [x] WAL
-- [ ] Manifest
+- [x] Manifest
 - [ ] Sparse Index
 - [ ] Compression
 - [ ] Block Cache
