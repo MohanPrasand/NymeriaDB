@@ -1,4 +1,5 @@
 from database import Database
+from db_assigner import DBAssigner
 
 class SessionHandler:
     def __init__(self):
@@ -13,7 +14,7 @@ class SessionHandler:
             if len(command) != 2:
                 return "Error: select command requires database name"
             db_name = command[1]
-            self.DB = Database(db_name)
+            self.DB = DBAssigner().get_db(db_name)
             return f"Database selected: {db_name}"
 
         if not self.DB:
