@@ -2,13 +2,13 @@ import socket
 import threading
 from session_handler import SessionHandler 
 
-HOST = "localhost"
+HOST = "0.0.0.0"
 PORT = 5678
 
 def handle_client(conn, addr):
     print(f"Connected: {addr}")
 
-    handler = SessionHandler()  # one per client
+    handler = SessionHandler()
 
     try:
         while True:
