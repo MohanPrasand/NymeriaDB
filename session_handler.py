@@ -1,4 +1,3 @@
-from database import Database
 from db_assigner import DBAssigner
 
 class SessionHandler:
