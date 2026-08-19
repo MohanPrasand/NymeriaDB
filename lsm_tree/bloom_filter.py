@@ -2,9 +2,9 @@ import hashlib
 
 
 class BloomFilter:
-    def __init__(self, size=1024):
+    def __init__(self, size=1024, bits=0):
         self.size = size
-        self.bits = 0
+        self.bits = bits
 
     def _hashes(self, key):
         h1 = int(hashlib.md5(key.encode()).hexdigest(), 16) % self.size

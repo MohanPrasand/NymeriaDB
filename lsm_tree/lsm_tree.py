@@ -35,15 +35,16 @@ class LSM_Tree:
 
         if self.memTablec >= self.MAX_MEMTABLE:
 
-            self.flushMem(self.memTable)
+            st = self.flushMem(self.memTable)
 
             self.memTable = None
             self.memTablec = 0
             self.start = None
             self.end = None
             self.bloom_filter = BloomFilter(size=1024)
+            return True
 
-        return True
+        return False
 
     def delete(self, key):
 
@@ -57,7 +58,7 @@ class LSM_Tree:
 
         if self.memTablec >= self.MAX_MEMTABLE:
 
-            self.flushMem(self.memTable)
+            st = self.flushMem(self.memTable)
 
             self.memTable = None
             self.memTablec = 0
@@ -65,7 +66,9 @@ class LSM_Tree:
             self.end = None
             self.bloom_filter = BloomFilter(size=1024)
 
-        return True
+            return True
+
+        return False
 
     def flushMem(self, tree, level=0):
 
