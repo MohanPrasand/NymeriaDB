@@ -29,3 +29,6 @@ class WAL:
         os.remove(self.path)
         self.file = open(self.path, "a+")
         self.file.seek(0, 2)
+
+    def close(self):
+        self.file.close()

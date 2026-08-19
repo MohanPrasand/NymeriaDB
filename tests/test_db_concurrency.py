@@ -1,14 +1,7 @@
-import threading
-import unittest
+def test_concurrent_inserts(self):
+    db = Database("concurrency_test")
 
-from database import Database
-
-
-class TestDatabaseConcurrency(unittest.TestCase):
-
-    def test_concurrent_inserts(self):
-        db = Database("concurrency_test")
-
+    try:
         def writer(start):
             for i in range(start, start + 100):
                 db.insert(f"key-{i}", str(i))
@@ -33,6 +26,5 @@ class TestDatabaseConcurrency(unittest.TestCase):
                 str(i)
             )
 
-
-if __name__ == "__main__":
-    unittest.main()
+    finally:
+        db.close()
