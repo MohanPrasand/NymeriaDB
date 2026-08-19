@@ -3,6 +3,7 @@ from db_assigner import DBAssigner
 class SessionHandler:
     def __init__(self):
         self.DB = None
+        self.db_name = None
 
     def execute(self, command):
         return self.__execute_command(command.strip().split())
@@ -12,8 +13,12 @@ class SessionHandler:
         if command[0] == "select":
             if len(command) != 2:
                 return "Error: select command requires database name"
+
+            if self.DB:
+                DBAssigner().close_db(self.db_name)
             db_name = command[1]
             self.DB = DBAssigner().get_db(db_name)
+            self.db_name = db_name
             return f"Database selected: {db_name}"
 
         if not self.DB:
@@ -41,6 +46,13 @@ class SessionHandler:
             return "Shutting down DB..."
         else:
             return "Error: Unknown command"
+
+    def close(self):
+        if self.DB:
+            DBAssigner().close_db(self.db_name)
+            self.DB = None
+            self.db_name = None
+
 
 if __name__ == "__main__":
     session_handler = SessionHandler()

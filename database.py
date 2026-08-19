@@ -77,6 +77,9 @@ class Database:
         self.__release_read()
         return result
 
+    def close(self):
+        self.wal.close()
+
 if __name__ == "__main__":
     db = Database()
     while True:

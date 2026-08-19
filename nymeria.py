@@ -19,9 +19,9 @@ def handle_client(conn, addr):
 
             response = handler.execute(data)
             conn.sendall((response + "\n").encode())
-
     finally:
         conn.close()
+        handler.close()
         print(f"Disconnected: {addr}")
 
 
