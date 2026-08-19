@@ -14,7 +14,7 @@ class Database:
 
 
         self.db_name = db_name
-        self.lsm = lsm_tree.LSM_Tree()
+        self.lsm = lsm_tree.LSM_Tree(DB_PATH+f"/{db_name}")
         self.wal = WAL(f"{DB_PATH}/{db_name}/wal.log")
         self.manifest = Manifest(f"{DB_PATH}/{db_name}/manifest.json")
 

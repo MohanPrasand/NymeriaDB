@@ -10,9 +10,10 @@ class LSM_Tree:
 
     MAX_MEMTABLE = 10
 
-    def __init__(self):
+    def __init__(self, path):
         self.memTable = None
         self.memTablec = 0
+        self.path = path
 
         self.ssTables = [[], [], []]
 
@@ -72,7 +73,7 @@ class LSM_Tree:
 
     def flushMem(self, tree, level=0):
 
-        filepath = f"./data/sstab{self.count}.table"
+        filepath = f"{self.path}/sstab{self.count}.table"
         self.count += 1
 
         ss_table.save(tree, filepath)
